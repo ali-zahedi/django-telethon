@@ -7,6 +7,8 @@
 
 [[_TOC_]]
 
+This project is to help you use [Telethon](https://docs.telethon.dev/en/stable/index.html). 
+
 ## Installation
 
 * Use the following command to install using pip:
@@ -23,6 +25,13 @@ pip install django-telethon
 pip install -e ".[dev]"
 pre-commit install
 ```
+For better understanding, please read the:
+* [Telethon](https://docs.telethon.dev/en/stable/index.html) documentation.
+* [Telethon Session](https://docs.telethon.dev/en/stable/modules/sessions.html) documentation.
+* [pre-commit](https://pre-commit.com/docs/installation/) documentation.
+* [pip](https://pip.pypa.io/en/stable/installing/) documentation.
+* [python package](https://packaging.python.org/en/latest/tutorials/packaging-projects/) documentation.
+* [github pull requests](https://help.github.com/en/articles/about-pull-requests/) documentation.
 
 ### settings.py
 
