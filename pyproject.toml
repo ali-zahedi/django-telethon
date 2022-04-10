@@ -1,0 +1,22 @@
+[tool.black]
+skip-string-normalization=1
+line-length = 119
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | frontend
+  | .+/migrations
+)/
+'''
+
+[tool.isort]
+profile = "black"
