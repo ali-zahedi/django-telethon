@@ -43,7 +43,8 @@ setup(
     ],
     install_requires=[
         'Django>=2.2',
-        'Telethon>=1.24.0',
+        'Telethon>=1.0.0,<2',
+        'nest-asyncio>=1.5.5,<2',
     ],
     extras_require={
         'dev': [
