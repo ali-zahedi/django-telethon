@@ -20,10 +20,10 @@ setup(
     url='https://github.com/ali-zahedi/django-telethon',
     author='Ali Zahedigol',
     author_email='alizahedigol@gmail.com',
+    python_requires='>=3.7',
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',
-        'Framework :: Django :: 2.2',
         'Framework :: Django :: 3.0',
         'Framework :: Django :: 3.1',
         'Framework :: Django :: 3.2',
@@ -33,18 +33,17 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3 :: Only',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
     install_requires=[
-        'Django>=2.2',
-        'Telethon>=1.0.0,<2',
-        'nest-asyncio>=1.5.5,<2',
+        'Django>=3.0',
+        'Telethon>=1.24.0,<2',
     ],
     extras_require={
         'dev': [
