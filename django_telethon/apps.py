@@ -7,3 +7,6 @@ class DjangoTelethonConfig(AppConfig):
     verbose_name = _('Django Telethon')
     verbose_name_plural = _('Django Telethon')
     default_auto_field = 'django.db.models.BigAutoField'
+
+    def ready(self):
+        from .receivers import receiver_telegram_client_registered  # noqa: F401

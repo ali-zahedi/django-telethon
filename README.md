@@ -256,7 +256,7 @@ python manage.py runtelegram
     stdout_logfile=/home/projectuser/logs/telegramworker.out.log
     ```
 
-2. Reload the supervisor daemon:
+1. Reload the supervisor daemon:
 
     ```shell
     supervisorctl reread
@@ -264,6 +264,53 @@ python manage.py runtelegram
     supervisorctl start telegram_worker
     supervisorctl status
     ```
+
+## Listen to events
+
+After login telegram client the signal `telegram_client_registered` is emitted. 
+
+1. you can listen to this signal by using the following code for example put this code to your ```receivers.py``` file in app directory:
+   
+   ```python
+   from functools import partial
+   
+   from django.dispatch import receiver
+   from telethon import events
+   
+   from django_telethon.signals import telegram_client_registered
+   
+   async def event_handler(event, client_session):
+       print(client_session.name, event.raw_text, sep=' | ')
+       # if you need access to telegram client, you can use event.client
+       # telegram_client = event.client
+       await event.respond('!pong')
+   
+   
+   @receiver(telegram_client_registered)
+   def receiver_telegram_registered(telegram_client, client_session, *args, **kwargs):
+       handler = partial(event_handler, client_session=client_session)
+       telegram_client.add_event_handler(
+           handler,
+           events.NewMessage(pattern='ping'),
+       )
+   
+   ```
+
+1. In the `apps.py` file, add the following code:
+   
+   ```python
+   from django.apps import AppConfig
+   
+   class MyAppConfig(AppConfig):
+       ...
+   
+       def ready(self):
+           from .receivers import receiver_telegram_registered  # noqa: F401
+   ```
+
+1. Read more about signals in [Django signals](https://docs.djangoproject.com/en/4.0/topics/signals/)
+1. Read more about events in [Telethon events](https://docs.telethon.dev/en/stable/modules/events.html)
+
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE) for more information.
