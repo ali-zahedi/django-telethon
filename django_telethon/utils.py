@@ -1,16 +1,11 @@
 import logging
 
-from telethon import TelegramClient, events
+from telethon import TelegramClient
 from telethon.errors import SessionPasswordNeededError
 
 from django_telethon.models import App, ClientSession, Login, LoginStatus
 from django_telethon.sessions import DjangoSession
-
-
-@events.register(events.NewMessage)
-async def register_entity(event):
-    # register entity
-    await event.get_input_sender()
+from django_telethon.signals import telegram_client_registered
 
 
 async def login_bot(client_session, bot_token):
@@ -64,7 +59,9 @@ async def connect_client(client_app, app):
         client_app.save()
 
     await telegram_client.start()
-    telegram_client.add_event_handler(register_entity)
+    telegram_client_registered.send(
+        sender=telegram_client.__class__, telegram_client=telegram_client, client_session=client_app
+    )
 
 
 async def connect_clients():
