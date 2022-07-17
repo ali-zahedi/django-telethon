@@ -1,13 +1,19 @@
 <!--![GitHub All Releases](https://img.shields.io/github/downloads/ali-zahedi/django-telethon/total)-->
 <!--![GitHub issues](https://img.shields.io/github/issues/ali-zahedi/django-telethon)-->
 ![GitHub](https://img.shields.io/github/license/ali-zahedi/django-telethon)
-![GitHub](https://img.shields.io/pypi/pyversions/django-telethon.svg?maxAge=2592000)
-![GitHub](https://img.shields.io/pypi/v/django-telethon.svg?maxAge=2592000)
+![GitHub](https://img.shields.io/pypi/pyversions/django-telethon.svg)
+![GitHub](https://img.shields.io/pypi/v/django-telethon.svg)
 # Django Telethon config
 
-[[_TOC_]]
+
+  ⭐️ Thanks **everyone** who has starred the project, it means a lot!
 
 This project is to help you use [Telethon](https://docs.telethon.dev/en/stable/index.html). 
+
+## Compatibility
+
+* Python 3.7+
+* Django 3.0+
 
 ## Installation
 
@@ -43,7 +49,21 @@ INSTALLED_APPS = [
     # ...
 ]
 ```
+### urls.py
 
+```shell
+from django.contrib import admin
+from django.urls import path
+
+from django_telethon.urls import django_telethon_urls
+
+admin.autodiscover()
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('telegram/', django_telethon_urls()),
+]
+```
 ### Migration
 
 
@@ -51,9 +71,199 @@ INSTALLED_APPS = [
 python manage.py migrate
 ```
 
+## Signing In
+
+Before working with Telegram’s API, you need to get your own API ID and hash:
+
+[Login to your Telegram account](https://my.telegram.org/auth) with the phone number of the developer account to use.
+Click under API Development tools.
+A Create new application window will appear. Fill in your application details. There is no need to enter any URL, and only the first two fields (App title and Short name) can currently be changed later.
+Click on Create application at the end. Remember that your API hash is secret and Telegram won’t let you revoke it. Don’t post it anywhere!
+
+***This API ID and hash is the one used by your application, not your phone number. You can use this API ID and hash with any phone number or even for bot accounts.***
+
+Read more (proxy, bot and etc) [Here](https://docs.telethon.dev/en/stable/basic/signing-in.html).
+
 ## Usage
 
+### Interactive mode
 
+1. Open a terminal and run the following command:
+
+    ```shell script
+    python manage.py shell
+    ```
+1. Enable ```DJANGO_ALLOW_ASYNC_UNSAFE``` in your environment.
+
+    ```python
+    import os
+    os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
+    ```
+
+1. You can import these from ```django_telethon.sessions```. For example, using the ```DjangoSession``` is done as follows:
+
+    ```python
+    from telethon.sync import TelegramClient
+    from django_telethon.sessions import DjangoSession
+    from django_telethon.models import App, ClientSession
+    from telethon.errors import SessionPasswordNeededError
+    
+    # Use your own values from my.telegram.org
+    API_ID = 12345
+    API_HASH = '0123456789abcdef0123456789abcdef'
+    
+    app, is_created = App.objects.update_or_create(
+        api_id=API_ID,
+        api_hash=API_HASH
+    )
+    cs = ClientSession.objects.update_or_create(
+        name='default',
+    )
+    telegram_client = TelegramClient(DjangoSession(client_session=cs), app.api_id, app.api_hash)
+    telegram_client.connect()
+    
+    if not telegram_client.is_user_authorized():
+        phone = input('Enter your phone number: ')
+        telegram_client.send_code_request(phone)
+        code = input('Enter the code you received: ')
+        try:
+            telegram_client.sign_in(phone, code)
+        except SessionPasswordNeededError:
+            password = input('Enter your password: ')
+            telegram_client.sign_in(password=password)    
+    ```
+
+#### Doing stuff
+
+```python
+print((await telegram_client.get_me()).stringify())
+
+await telegram_client.send_message('username', 'Hello! Talking to you from Telethon')
+await telegram_client.send_file('username', '/home/myself/Pictures/holidays.jpg')
+
+await telegram_client.download_profile_photo('me')
+messages = await telegram_client.get_messages('username')
+await messages[0].download_media()
+
+@telegram_client.on(telegram_client.NewMessage(pattern='(?i)hi|hello'))
+async def handler(event):
+    await event.respond('Hey!')
+```
+
+### API
+#### User Login
+1. run the following command to start the server:
+
+    ```shell script
+    python manage.py runserver
+    ```
+
+1. run the following command to start telegram client:
+
+    ```shell script
+    python manage.py runtelegram
+    ```
+   
+1. go to [admin panel](http://127.0.0.1:8000/admin/) and [telegram app section](http://127.0.0.1:8000/admin/django_telethon/app/). create a new app. get data from the [your Telegram account](https://my.telegram.org/auth).
+
+1. request code from telegram:
+    
+   ```python
+   import requests
+   import json
+   
+   url = "127.0.0.1:8000/telegram/send-code-request/"
+   
+   payload = json.dumps({
+     "phone_number": "+12345678901",
+     "client_session_name": "name of the client session"
+   })
+   headers = {
+     'Content-Type': 'application/json'
+   }
+   
+   response = requests.request("POST", url, headers=headers, data=payload)
+   
+   print(response.text)
+    ```
+
+1. send this request for sign in:
+    
+   ```python
+   import requests
+   import json
+   
+   url = "127.0.0.1:8000/telegram/login-user-request/"
+   
+   payload = json.dumps({
+     "phone_number": "+12345678901",
+     "client_session_name": "name of the client session",
+     "code": "1234",
+     "password": "1234"
+   })
+   headers = {
+     'Content-Type': 'application/json'
+   }
+   
+   response = requests.request("POST", url, headers=headers, data=payload)
+   
+   print(response.text)
+
+   ```
+
+#### Bot login 
+send this request for sign in:
+    
+   ```python
+   import requests
+   import json
+   
+   url = "127.0.0.1:8000/telegram/login-bot-request/"
+   
+   payload = json.dumps({
+     "bot_token": "bot token",
+     "client_session_name": "name of the client session",
+   })
+   headers = {
+     'Content-Type': 'application/json'
+   }
+   
+   response = requests.request("POST", url, headers=headers, data=payload)
+   
+   print(response.text)
+
+   ```
+
+### Server-side
+
+If you are using **supervisord** or **another process manager**, you can use the following command to start the server:
+
+```shell script
+python manage.py runtelegram
+```
+
+#### Supervisord
+
+1. Add the following lines to your ```/etc/supervisord.d/[yourproject].ini``` file:
+
+    ```ini
+    [program:telegram_worker]
+    directory=/home/projectuser/[your_project_directory]/
+    command=/home/projectuser/venv/bin/python manage.py runtelegram
+    autostart=true
+    autorestart=true
+    stderr_logfile=/home/projectuser/logs/telegramworker.err.log
+    stdout_logfile=/home/projectuser/logs/telegramworker.out.log
+    ```
+
+2. Reload the supervisor daemon:
+
+    ```shell
+    supervisorctl reread
+    supervisorctl update
+    supervisorctl start telegram_worker
+    supervisorctl status
+    ```
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE) for more information.
