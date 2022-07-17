@@ -1,15 +1,13 @@
-import asyncio
 import logging
 
-import nest_asyncio
-from asgiref.sync import sync_to_async
+from django.core.exceptions import ObjectDoesNotExist
 from telethon import utils
 from telethon.crypto import AuthKey
 from telethon.sessions import MemorySession
 from telethon.tl import types
 from telethon.tl.types import InputDocument, InputPhoto, PeerChannel, PeerChat, PeerUser
 
-from .models import ClientSession, Entity, UpdateState
+from .models import ClientSession, Entity, Session, UpdateState
 from .models.sentfiles import SentFileType
 
 """
@@ -27,13 +25,12 @@ class DjangoSession(MemorySession):
     through an official Telegram client to revoke the authorization.
     """
 
-    def __init__(self, session_id=None):
-        super().__init__()
+    def __init__(self, client_session: ClientSession, *args, **kwargs):
         self.save_entities = True
-        if not session_id:
-            session_id = 'default'
-        self.client_session, *_ = ClientSession.objects.get_or_create(name=session_id)
-        if session := self.client_session.session_set.first():
+        super().__init__()
+        self.client_session = client_session
+        if hasattr(self.client_session, 'session'):
+            session = self.client_session.session
             self._dc_id = session.data_center_id
             self._server_address = session.server_address
             self._port = session.port
@@ -42,6 +39,8 @@ class DjangoSession(MemorySession):
             if isinstance(auth_key, memoryview):
                 auth_key = auth_key.tobytes()
             self._auth_key = AuthKey(data=auth_key)
+        else:
+            self._auth_key = None
 
     def clone(self, to_instance=None):
         cloned = super().clone(to_instance)
@@ -52,14 +51,15 @@ class DjangoSession(MemorySession):
     # not to fetch the database every time we need it
     def set_dc(self, dc_id, server_address, port):
         super().set_dc(dc_id, server_address, port)
-        synchronize_async_helper(self._set_dc(dc_id, server_address, port))
-
-    async def _set_dc(self, dc_id, server_address, port):
-        await self._update_session_table()
+        self._update_session_table()
         # Fetch the auth_key corresponding to this data center
-        auth_key = await sync_to_async(self.client_session.session_set.values_list('auth_key', flat=True).first)()
-        if isinstance(auth_key, memoryview):
-            auth_key = auth_key.tobytes()
+        try:
+            session = Session.objects.get(client_session=self.client_session)
+            auth_key = session.auth_key
+            if isinstance(auth_key, memoryview):
+                auth_key = auth_key.tobytes()
+        except ObjectDoesNotExist:
+            auth_key = None
         self._auth_key = AuthKey(data=auth_key) if auth_key else None
 
     @MemorySession.auth_key.setter
@@ -67,16 +67,16 @@ class DjangoSession(MemorySession):
         if value == self._auth_key:
             return
         self._auth_key = value
-        synchronize_async_helper(self._update_session_table())
+        self._update_session_table()
 
     @MemorySession.takeout_id.setter
     def takeout_id(self, value):
         self._takeout_id = value
         if value == self._takeout_id:
             return
-        synchronize_async_helper(self._update_session_table())
+        self._update_session_table()
 
-    async def _update_session_table(self):
+    def _update_session_table(self):
         # While we can save multiple rows into the sessions table
         # currently we only want to keep ONE as the tables don't
         # tell us which auth_key's are usable and will work. Needs
@@ -89,7 +89,10 @@ class DjangoSession(MemorySession):
             'auth_key': self._auth_key.key if self._auth_key else b'',
             'takeout_id': self._takeout_id,
         }
-        await sync_to_async(self.client_session.session_set.update_or_create)(defaults=defaults)
+        Session.objects.update_or_create(
+            client_session=self.client_session,
+            defaults=defaults,
+        )
 
     def get_update_state(self, entity_id):
         try:
@@ -99,7 +102,6 @@ class DjangoSession(MemorySession):
             return None
 
     def set_update_state(self, entity_id, state):
-
         self.client_session.updatestate_set.update_or_create(
             pk=entity_id,
             defaults={
@@ -141,9 +143,9 @@ class DjangoSession(MemorySession):
         Processes all the found entities on the given TLObject,
         unless .save_entities is False.
         """
-        synchronize_async_helper(self._process_entities(tlo))
+        self._process_entities(tlo)
 
-    async def _process_entities(self, tlo):
+    def _process_entities(self, tlo):
         if not self.save_entities:
             return
 
@@ -151,7 +153,7 @@ class DjangoSession(MemorySession):
         if not rows:
             return
 
-        entities = await sync_to_async(list)(self.client_session.entity_set.filter(pk__in=[row[0] for row in rows]))
+        entities = self.client_session.entity_set.filter(pk__in=[row[0] for row in rows])
         entities_does_not_exists = []
         for row in rows:
             is_find = False
@@ -173,10 +175,8 @@ class DjangoSession(MemorySession):
                         name=row[4],
                     )
                 )
-        await sync_to_async(self.client_session.entity_set.bulk_update)(
-            entities, ['hash_value', 'username', 'phone', 'name']
-        )
-        await sync_to_async(self.client_session.entity_set.bulk_create)(entities_does_not_exists)
+        self.client_session.entity_set.bulk_update(entities, ['hash_value', 'username', 'phone', 'name'])
+        self.client_session.entity_set.bulk_create(entities_does_not_exists)
 
     def get_entity_rows_by_phone(self, phone):
 
@@ -238,21 +238,3 @@ class DjangoSession(MemorySession):
             file_type=SentFileType.from_type(type(instance)).value,
             defaults={'hash_value': instance.access_hash, 'file_id': instance.id},
         )
-
-
-def synchronize_async_helper(to_await):
-    async_response = []
-
-    async def run_and_capture_result():
-        r = await to_await
-        async_response.append(r)
-
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:  # no event loop running:
-        loop = asyncio.new_event_loop()
-    else:
-        nest_asyncio.apply(loop)
-    coroutine = run_and_capture_result()
-    loop.run_until_complete(coroutine)
-    return async_response[0]

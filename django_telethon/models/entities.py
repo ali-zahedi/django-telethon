@@ -5,7 +5,8 @@ from django.utils.translation import gettext_lazy as _
 class Entity(models.Model):
     client_session = models.ForeignKey(
         'ClientSession',
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
+        null=True,
         verbose_name=_('Client Session'),
     )
     hash_value = models.BigIntegerField(

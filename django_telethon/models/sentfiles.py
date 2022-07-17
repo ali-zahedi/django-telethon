@@ -1,8 +1,7 @@
 from django.db import models
+from django.db.models import IntegerChoices
 from django.utils.translation import gettext_lazy as _
 from telethon.tl.types import InputDocument, InputPhoto
-
-from django_telethon.default_settings import IntegerChoices
 
 
 class SentFileType(IntegerChoices):

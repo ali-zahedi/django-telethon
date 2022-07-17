@@ -2,10 +2,26 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 
+class LoginStatus(models.IntegerChoices):
+    LOGIN_REQUIRED = 1
+    LOGIN_DONE = 2
+    LOGIN_FAILED = 3
+    LOGIN_WAITING_FOR_TELEGRAM_CLIENT = 4
+
+    @classmethod
+    def approve(cls) -> list:
+        return [cls.LOGIN_DONE.value, cls.LOGIN_WAITING_FOR_TELEGRAM_CLIENT.value]
+
+
 class ClientSession(models.Model):
     name = models.CharField(
         max_length=255,
         verbose_name=_('Client Session Name'),
+    )
+    login_status = models.PositiveSmallIntegerField(
+        default=LoginStatus.LOGIN_REQUIRED,
+        choices=LoginStatus.choices,
+        verbose_name=_('Login Required'),
     )
 
     def __str__(self):
@@ -17,9 +33,10 @@ class ClientSession(models.Model):
 
 
 class Session(models.Model):
-    client_session = models.ForeignKey(
+    client_session = models.OneToOneField(
         'ClientSession',
         on_delete=models.CASCADE,
+        primary_key=True,
         verbose_name=_('Client Session'),
     )
     auth_key = models.BinaryField(
