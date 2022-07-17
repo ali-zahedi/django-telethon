@@ -9,6 +9,9 @@ class Entity(models.Model):
         null=True,
         verbose_name=_('Client Session'),
     )
+    entity_id = models.BigIntegerField(
+        verbose_name=_('Entity ID'),
+    )
     hash_value = models.BigIntegerField(
         blank=False,
         null=False,

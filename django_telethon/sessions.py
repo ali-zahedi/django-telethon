@@ -153,12 +153,12 @@ class DjangoSession(MemorySession):
         if not rows:
             return
 
-        entities = self.client_session.entity_set.filter(pk__in=[row[0] for row in rows])
+        entities = self.client_session.entity_set.filter(entity_id__in=[row[0] for row in rows])
         entities_does_not_exists = []
         for row in rows:
             is_find = False
             for entity in entities:
-                if entity.pk == row[0]:
+                if entity.entity_id == row[0]:
                     is_find = True
                     entity.hash_value = row[1]
                     entity.username = row[2]
@@ -167,7 +167,7 @@ class DjangoSession(MemorySession):
             if not is_find:
                 entities_does_not_exists.append(
                     Entity(
-                        pk=row[0],
+                        entity_id=row[0],
                         client_session=self.client_session,
                         hash_value=row[1],
                         username=row[2],
@@ -180,7 +180,7 @@ class DjangoSession(MemorySession):
 
     def get_entity_rows_by_phone(self, phone):
 
-        return self.client_session.entity_set.filter(phone=phone).values_list('pk', 'hash_value').first()
+        return self.client_session.entity_set.filter(phone=phone).values_list('entity_id', 'hash_value').first()
 
     def get_entity_rows_by_username(self, username):
 
@@ -188,29 +188,31 @@ class DjangoSession(MemorySession):
         if len(queryset) > 1:
             # If there is more than one result for the same username, evict the oldest one
             logging.warning('Found more than one entity with username %s', username)
-            self.client_session.entity_set.filter(pk__in=[obj.pk for obj in queryset[1:]]).update(username=None)
+            self.client_session.entity_set.filter(entity_id__in=[obj.entity_id for obj in queryset[1:]]).update(
+                username=None
+            )
         if not queryset:
             return None
-        return queryset[0].pk, queryset[0].hash_value
+        return queryset[0].entity_id, queryset[0].hash_value
 
     def get_entity_rows_by_name(self, name):
 
-        return self.client_session.entity_set.filter(name=name).values_list('pk', 'hash_value').first()
+        return self.client_session.entity_set.filter(name=name).values_list('entity_id', 'hash_value').first()
 
     def get_entity_rows_by_id(self, id, exact=True):
 
         if exact:
-            return self.client_session.entity_set.filter(pk=id).values_list('pk', 'hash_value').first()
+            return self.client_session.entity_set.filter(entity_id=id).values_list('entity_id', 'hash_value').first()
         else:
             return (
                 self.client_session.entity_set.filter(
-                    pk__in=[
+                    entity_id__in=[
                         utils.get_peer_id(PeerUser(id)),
                         utils.get_peer_id(PeerChat(id)),
                         utils.get_peer_id(PeerChannel(id)),
                     ]
                 )
-                .values_list('pk', 'hash_value')
+                .values_list('entity_id', 'hash_value')
                 .first()
             )
 
