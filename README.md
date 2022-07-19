@@ -10,6 +10,14 @@
 
 This project is to help you use [Telethon](https://docs.telethon.dev/en/stable/index.html). 
 
+Djagno-Telethon is an asyncio Python 3 MTProto library to interact with Telegram's API as a user or through a bot account (bot API alternative).
+
+###What is this?
+
+Telegram is a popular messaging application. This library is meant to make it easy for you to write Python programs that can interact with Telegram. Think of it as a wrapper that has already done the heavy job for you, so you can focus on developing an application.
+
+A Django-Telethon session storage implementation backed for Django ORM to use telethon in django projects.
+
 ## Compatibility
 
 * Python 3.7+
