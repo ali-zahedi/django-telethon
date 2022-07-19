@@ -30,7 +30,7 @@ class Entity(models.Model):
         verbose_name=_('Phone'),
     )
     name = models.CharField(
-        max_length=50,
+        max_length=150,
         blank=True,
         null=True,
         verbose_name=_('Name'),

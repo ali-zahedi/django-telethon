@@ -102,7 +102,7 @@ class Migration(migrations.Migration):
                 ('hash_value', models.BigIntegerField(verbose_name='Hash Value')),
                 ('username', models.CharField(blank=True, max_length=255, null=True, verbose_name='Username')),
                 ('phone', models.CharField(blank=True, max_length=15, null=True, verbose_name='Phone')),
-                ('name', models.CharField(blank=True, max_length=50, null=True, verbose_name='Name')),
+                ('name', models.CharField(blank=True, max_length=150, null=True, verbose_name='Name')),
                 ('date', models.DateTimeField(auto_now_add=True, verbose_name='Date')),
                 (
                     'client_session',
