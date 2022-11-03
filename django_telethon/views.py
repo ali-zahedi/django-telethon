@@ -2,6 +2,7 @@ import json
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 from django_telethon.models import App, ClientSession, Login, LoginStatus
 
@@ -15,6 +16,7 @@ def _get_data(request):
     return data
 
 
+@csrf_exempt
 def send_code_request_view(request):
     data = _get_data(request)
     phone_number = data.get('phone_number', None)
@@ -36,6 +38,7 @@ def send_code_request_view(request):
     return JsonResponse({'login_id': login.id}, status=200)
 
 
+@csrf_exempt
 def login_user_view(request):
     data = _get_data(request)
     client_session_name = data.get('client_session_name', None)
@@ -69,6 +72,7 @@ def login_user_view(request):
     return JsonResponse({}, status=200)
 
 
+@csrf_exempt
 def login_bot_view(request):
     data = _get_data(request)
     client_session_name = data.get('client_session_name', None)
