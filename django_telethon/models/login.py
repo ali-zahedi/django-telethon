@@ -18,7 +18,7 @@ class LoginQueryset(models.QuerySet):
         return self.filter(have_to_send_code=True).distinct('client_session')
 
     def have_to_login(self):
-        return self.filter(code__isnull=False).distinct('client_session')
+        return self.filter(Q(code__isnull=False) | Q(bot_token__isnull=False)).distinct('client_session')
 
 
 class LoginManager(models.Manager):
