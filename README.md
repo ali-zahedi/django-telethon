@@ -180,7 +180,7 @@ async def handler(event):
    import requests
    import json
    
-   url = "127.0.0.1:8000/telegram/send-code-request/"
+   url = "http://127.0.0.1:8000/telegram/send-code-request/"
    
    payload = json.dumps({
      "phone_number": "+12345678901",
@@ -201,7 +201,7 @@ async def handler(event):
    import requests
    import json
    
-   url = "127.0.0.1:8000/telegram/login-user-request/"
+   url = "http://127.0.0.1:8000/telegram/login-user-request/"
    
    payload = json.dumps({
      "phone_number": "+12345678901",
@@ -226,7 +226,7 @@ send this request for sign in:
    import requests
    import json
    
-   url = "127.0.0.1:8000/telegram/login-bot-request/"
+   url = "http://127.0.0.1:8000/telegram/login-bot-request/"
    
    payload = json.dumps({
      "bot_token": "bot token",
@@ -299,7 +299,7 @@ After login telegram client the signal `telegram_client_registered` is emitted.
        handler = partial(event_handler, client_session=client_session)
        telegram_client.add_event_handler(
            handler,
-           events.NewMessage(pattern='ping'),
+           events.NewMessage(incoming=True, pattern='ping'),
        )
    
    ```

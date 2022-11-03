@@ -80,7 +80,7 @@ def login_bot_view(request):
     if not bot_token or not client_session_name:
         return JsonResponse({'error': 'Missing bot token or client session name or code'}, status=400)
 
-    client_session = ClientSession.objects.get_or_create(name=client_session_name)
+    client_session, _ = ClientSession.objects.get_or_create(name=client_session_name)
 
     if client_session.login_status != LoginStatus.LOGIN_REQUIRED:
         return JsonResponse({'error': 'Client session is not in login required status'}, status=400)
