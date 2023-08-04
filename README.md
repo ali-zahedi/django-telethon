@@ -10,13 +10,13 @@
 
 This project is to help you use [Telethon](https://docs.telethon.dev/en/stable/index.html). 
 
-Djagno-Telethon is an asyncio Python 3 MTProto library to interact with Telegram's API as a user or through a bot account (bot API alternative).
+Django-Telethon is an asyncio Python 3 MTProto library to interact with Telegram's API as a user or through a bot account (bot API alternative).
 
 ### What is this?
 
 Telegram is a popular messaging application. This library is meant to make it easy for you to write Python programs that can interact with Telegram. Think of it as a wrapper that has already done the heavy job for you, so you can focus on developing an application.
 
-A Django-Telethon session storage implementation backed for Django ORM to use telethon in django projects.
+Django-Telethon is a session storage implementation backend for Django ORM to use telethon in Django projects.
 
 ## Compatibility
 
@@ -83,10 +83,10 @@ python manage.py migrate
 
 Before working with Telegram’s API, you need to get your own API ID and hash:
 
-[Login to your Telegram account](https://my.telegram.org/auth) with the phone number of the developer account to use.
-Click under API Development tools.
-A Create new application window will appear. Fill in your application details. There is no need to enter any URL, and only the first two fields (App title and Short name) can currently be changed later.
-Click on Create application at the end. Remember that your API hash is secret and Telegram won’t let you revoke it. Don’t post it anywhere!
+- [Login to your Telegram account](https://my.telegram.org/auth) with the phone number of the developer account to use.
+- Click under API Development tools.
+- Create new application window will appear. Fill in your application details. There is no need to enter any URL, and only the first two fields (App title and Short name) can currently be changed later.
+- Click on Create application at the end. Remember that your API hash is secret and Telegram won’t let you revoke it. Don’t post it anywhere!
 
 ***This API ID and hash is the one used by your application, not your phone number. You can use this API ID and hash with any phone number or even for bot accounts.***
 
@@ -141,7 +141,7 @@ Read more (proxy, bot and etc) [Here](https://docs.telethon.dev/en/stable/basic/
             telegram_client.sign_in(password=password)    
     ```
 
-#### Doing stuff
+#### Doing stuffs
 
 ```python
 print((await telegram_client.get_me()).stringify())
@@ -160,13 +160,13 @@ async def handler(event):
 
 ### API
 #### User Login
-1. run the following command to start the server:
+1. Run the following command to start the server:
 
     ```shell script
     python manage.py runserver
     ```
 
-1. run the following command to start telegram client:
+1. Run the following command to start telegram client:
 
     ```shell script
     python manage.py runtelegram
@@ -174,7 +174,7 @@ async def handler(event):
    
 1. go to [admin panel](http://127.0.0.1:8000/admin/) and [telegram app section](http://127.0.0.1:8000/admin/django_telethon/app/). create a new app. get data from the [your Telegram account](https://my.telegram.org/auth).
 
-1. request code from telegram:
+1. Request code from telegram:
     
    ```python
    import requests
@@ -195,7 +195,7 @@ async def handler(event):
    print(response.text)
     ```
 
-1. send this request for sign in:
+1. Send this request for sign in:
     
    ```python
    import requests
@@ -220,7 +220,7 @@ async def handler(event):
    ```
 
 #### Bot login 
-send this request for sign in:
+Send this request for sign in:
     
    ```python
    import requests
@@ -277,7 +277,7 @@ python manage.py runtelegram
 
 After login telegram client the signal `telegram_client_registered` is emitted. 
 
-1. you can listen to this signal by using the following code for example put this code to your ```receivers.py``` file in app directory:
+1. You can listen to this signal by using the following code for example put this code to your ```receivers.py``` file in app directory:
    
    ```python
    from functools import partial
