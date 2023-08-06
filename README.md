@@ -124,7 +124,7 @@ Read more (proxy, bot and etc) [Here](https://docs.telethon.dev/en/stable/basic/
         api_id=API_ID,
         api_hash=API_HASH
     )
-    cs = ClientSession.objects.update_or_create(
+    cs, cs_is_created = ClientSession.objects.update_or_create(
         name='default',
     )
     telegram_client = TelegramClient(DjangoSession(client_session=cs), app.api_id, app.api_hash)
