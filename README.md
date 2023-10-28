@@ -319,6 +319,84 @@ After login telegram client the signal `telegram_client_registered` is emitted.
 1. Read more about signals in [Django signals](https://docs.djangoproject.com/en/4.0/topics/signals/)
 1. Read more about events in [Telethon events](https://docs.telethon.dev/en/stable/modules/events.html)
 
+
+
+## Django Configuration[Optional]
+
+To configure the Django Telethon library, you need to update your Django settings. Add the following dictionary to your Django settings:
+
+```python
+DJANGO_TELETHON = {
+    'RABBITMQ_ACTIVE': True or False,   # Set to True if you want to use RabbitMQ. Otherwise, set to False.
+    'RABBITMQ_URL': 'your_rabbitmq_url',   # The URL to your RabbitMQ server.
+    'QUEUE_CHANNEL_NAME': 'your_channel_name',   # Name of the channel you want to use for the queue.
+    'QUEUE_CALLBACK': 'path_to_custom_callback'   # (Optional) Path to your custom callback. Default is 'django_telethon.callback.on_message'.
+}
+```
+
+#### Example
+```python
+DJANGO_TELETHON = {
+    'RABBITMQ_ACTIVE': True,
+    'RABBITMQ_URL': 'amqp://app:app@localhost:5672/app',
+    'QUEUE_CHANNEL_NAME': 'EXAMPLE_CHANNEL',   # Name of the channel you want to use for the queue.
+    'QUEUE_CALLBACK': 'django_telethon.callback.on_message'   # (Optional) Path to your custom callback. Default is 'django_telethon.callback.on_message'.
+}
+
+```
+
+### Default Callback
+
+By default, the library uses a callback `on_message` which logs the received message. If you want to use a custom callback, set the `QUEUE_CALLBACK` in your settings.
+
+
+## Usage
+
+When a new message arrives at the RabbitMQ channel specified, the configured callback function will be invoked. The default callback logs the message using the Python logging module. You can replace this with your own callback function to process the message as desired.
+
+## Using RabbitMQ for Inter-thread Communication
+In the scenario where different parts of your application (like web servers managed by Gunicorn, background workers managed by Celery, etc.) are running on different threads or even different machines, communicating directly might be a challenge. If, for instance, you receive a message directly from Telegram and want to respond or if some event happens on the web front and you wish to notify a Telegram user, it's not straightforward due to these separate threads.
+
+To solve this, Django Telethon library has introduced a mechanism to send messages across threads/machines using RabbitMQ. Here's how you can utilize it:
+
+Connect to RabbitMQ
+
+The library initializes a connection to RabbitMQ and listens for incoming messages. Once a message arrives, the specified callback function is invoked
+
+Sending Messages to Telegram Thread
+
+For components that want to communicate with the Telegram thread, you can use the `send_to_telegra_thread` function. This function sends a message to the Telegram thread via RabbitMQ.
+
+```python
+from django_telethon import send_to_telegra_thread
+
+# Send a payload/message to the Telegram thread
+send_to_telegra_thread(some_key="some_value", another_key="another_value")
+```
+The `send_to_telegra_thread` function serializes the payload and sends it to RabbitMQ. The Telegram thread, which is already listening to RabbitMQ, receives this message and can then process it, for example, to send a response back to a Telegram user.
+
+## Callbacks
+
+### Default `on_message` Callback
+
+Here's the default callback provided by the library:
+
+```python
+import logging
+
+
+async def on_message(body: str):
+    logging.debug("Received message:", body)
+
+```
+
+### Custom Callback
+
+To use a custom callback:
+
+1. Define your custom callback function. Ensure it's an `async` function and has a single parameter of type `aio_pika.IncomingMessage`.
+2. Set the `QUEUE_CALLBACK` in `DJANGO_TELETHON` settings to point to your custom callback function's path.
+
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE) for more information.
