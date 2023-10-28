@@ -16,6 +16,12 @@ async def _entry_point():
         logging.exception(e, exc_info=True)
 
     while True:
+        if RABBITMQ_ACTIVE:
+            try:
+                await connect_rabbitmq()
+            except Exception as e:
+                logging.exception(e, exc_info=True)
+
         await asyncio.sleep(30)
         try:
             await re_connect_clients()
@@ -24,11 +30,6 @@ async def _entry_point():
         except Exception as e:
             logging.exception(e, exc_info=True)
 
-        if RABBITMQ_ACTIVE:
-            try:
-                await connect_rabbitmq()
-            except Exception as e:
-                logging.exception(e, exc_info=True)
 
 
 class Command(BaseCommand):
