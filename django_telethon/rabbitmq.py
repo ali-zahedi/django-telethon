@@ -29,7 +29,7 @@ async def connect_rabbitmq():
     # Creating a consumer callback
     async def on_message(message: aio_pika.IncomingMessage):
         async with message.process():
-            QUEUE_CALLBACK_FN(message.body)
+            await QUEUE_CALLBACK_FN(message.body)
 
     await queue.consume(on_message)
 
