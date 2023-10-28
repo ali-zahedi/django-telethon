@@ -385,8 +385,8 @@ Here's the default callback provided by the library:
 import logging
 
 
-async def on_message(body: str):
-    logging.debug("Received message:", body)
+async def on_message(byte_string: bytes):
+    logging.debug("Received message:", byte_string)
 
 ```
 
