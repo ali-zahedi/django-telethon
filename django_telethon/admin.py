@@ -55,6 +55,7 @@ class EntityAdmin(admin.ModelAdmin):
     ]
     raw_id_fields = ['client_session']
     list_filter = ['client_session__name']
+    search_fields = ('hash_value', 'username', 'phone', 'name', )
 
 
 class UpdateStateAdmin(admin.ModelAdmin):
