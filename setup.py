@@ -46,7 +46,8 @@ setup(
         'Django>=3.0',
         'Telethon>=1.24.0,<2',
         'aio-pika>=9.3.0',
-        'pika>=1.3.2'
+        'pika>=1.3.2',
+        'PySocks>=1.7.1',
     ],
     extras_require={
         'dev': [
