@@ -11,7 +11,6 @@ from django_telethon.utils import connect_clients, re_connect_clients
 
 async def _entry_point(proxy):
     try:
-        print(f'connecting with: {proxy}')
         await connect_clients(proxy)
     except Exception as e:
         logging.exception(e, exc_info=True)
