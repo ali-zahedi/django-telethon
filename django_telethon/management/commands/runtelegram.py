@@ -31,7 +31,6 @@ async def _entry_point():
             logging.exception(e, exc_info=True)
 
 
-
 class Command(BaseCommand):
     help = 'Run telegram'
 

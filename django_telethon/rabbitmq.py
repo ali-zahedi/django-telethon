@@ -3,7 +3,12 @@ import logging
 import aio_pika
 import pika
 
-from django_telethon.default_settings import RABBITMQ_URL, QUEUE_CHANNEL_NAME, QUEUE_CALLBACK_FN
+from django_telethon.default_settings import (
+    QUEUE_CALLBACK_FN,
+    QUEUE_CHANNEL_NAME,
+    RABBITMQ_URL,
+)
+
 
 _rabbit_registered = False
 
@@ -16,9 +21,7 @@ async def connect_rabbitmq():
 
     _rabbit_registered = True
 
-    connection = await aio_pika.connect_robust(
-        RABBITMQ_URL
-    )
+    connection = await aio_pika.connect_robust(RABBITMQ_URL)
 
     # Creating a channel
     channel = await connection.channel()
@@ -50,7 +53,8 @@ def send_to_telegra_thread(**payload):
             body=byte_payload,
             properties=pika.BasicProperties(
                 delivery_mode=2,  # Make message persistent
-            ))
+            ),
+        )
 
         connection.close()
     except Exception as e:

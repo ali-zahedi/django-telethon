@@ -11,7 +11,8 @@ from .sessions import LoginStatus
 class LoginQueryset(models.QuerySet):
     def expired(self):
         return self.filter(
-            Q(created_at__lt=now() - timedelta(minutes=5)) | Q(client_session__login_status__in=LoginStatus.approve())
+            Q(created_at__lt=now() - timedelta(minutes=5))
+            | Q(client_session__login_status__in=LoginStatus.approve())
         )
 
     def have_to_send_code(self):
@@ -30,7 +31,9 @@ class LoginManager(models.Manager):
 
 
 class Login(models.Model):
-    client_session = models.ForeignKey('ClientSession', on_delete=models.CASCADE, verbose_name=_('Client session'))
+    client_session = models.ForeignKey(
+        'ClientSession', on_delete=models.CASCADE, verbose_name=_('Client session')
+    )
     have_to_send_code = models.BooleanField(default=True, verbose_name=_('Have to send code'))
     bot_token = models.CharField(
         max_length=255,

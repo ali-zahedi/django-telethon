@@ -10,6 +10,7 @@ from telethon.tl.types import InputDocument, InputPhoto, PeerChannel, PeerChat, 
 from .models import ClientSession, Entity, Session, UpdateState
 from .models.sentfiles import SentFileType
 
+
 """
 Read the following carefully before changing anything in this file.
 https://github.com/LonamiWebs/Telethon/blob/master/telethon/sessions.py
@@ -119,7 +120,6 @@ class DjangoSession(MemorySession):
         pass
 
     def delete(self):
-
         """Deletes the current session file"""
         try:
             self.client_session.delete()
@@ -130,7 +130,6 @@ class DjangoSession(MemorySession):
 
     @classmethod
     def list_sessions(cls):
-
         """Lists all the sessions of the users who have ever connected
         using this client and never logged out
         """
@@ -179,30 +178,32 @@ class DjangoSession(MemorySession):
         self.client_session.entity_set.bulk_create(entities_does_not_exists)
 
     def get_entity_rows_by_phone(self, phone):
-
-        return self.client_session.entity_set.filter(phone=phone).values_list('entity_id', 'hash_value').first()
+        return (
+            self.client_session.entity_set.filter(phone=phone).values_list('entity_id', 'hash_value').first()
+        )
 
     def get_entity_rows_by_username(self, username):
-
         queryset = list(self.client_session.entity_set.filter(username=username).order_by('-date'))
         if len(queryset) > 1:
             # If there is more than one result for the same username, evict the oldest one
             logging.warning('Found more than one entity with username %s', username)
-            self.client_session.entity_set.filter(entity_id__in=[obj.entity_id for obj in queryset[1:]]).update(
-                username=None
-            )
+            self.client_session.entity_set.filter(
+                entity_id__in=[obj.entity_id for obj in queryset[1:]]
+            ).update(username=None)
         if not queryset:
             return None
         return queryset[0].entity_id, queryset[0].hash_value
 
     def get_entity_rows_by_name(self, name):
-
         return self.client_session.entity_set.filter(name=name).values_list('entity_id', 'hash_value').first()
 
     def get_entity_rows_by_id(self, id, exact=True):
-
         if exact:
-            return self.client_session.entity_set.filter(entity_id=id).values_list('entity_id', 'hash_value').first()
+            return (
+                self.client_session.entity_set.filter(entity_id=id)
+                .values_list('entity_id', 'hash_value')
+                .first()
+            )
         else:
             return (
                 self.client_session.entity_set.filter(
@@ -219,7 +220,6 @@ class DjangoSession(MemorySession):
     # File processing
 
     def get_file(self, md5_digest, file_size, cls):
-
         if (
             row := self.client_session.sentfile_set.filter(
                 md5_digest=md5_digest, file_size=file_size, file_type=SentFileType.from_type(cls).value
@@ -231,7 +231,6 @@ class DjangoSession(MemorySession):
             return cls(row[0], row[1])
 
     def cache_file(self, md5_digest, file_size, instance):
-
         if not isinstance(instance, (InputDocument, InputPhoto)):
             raise TypeError(f'Cannot cache {type(instance)} instance')
         self.client_session.sentfile_set.update_or_create(

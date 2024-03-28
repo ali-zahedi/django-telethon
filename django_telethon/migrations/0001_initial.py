@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = []
@@ -14,7 +13,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='App',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
+                    ),
+                ),
                 ('api_id', models.CharField(max_length=255, verbose_name='API ID')),
                 ('api_hash', models.CharField(max_length=255, verbose_name='API Hash')),
             ],
@@ -26,7 +30,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ClientSession',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
+                    ),
+                ),
                 ('name', models.CharField(max_length=255, verbose_name='Client Session Name')),
                 (
                     'login_status',
@@ -50,7 +59,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='UpdateState',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
+                    ),
+                ),
                 ('pts', models.IntegerField(verbose_name='pts')),
                 ('qts', models.IntegerField(verbose_name='qts')),
                 ('date', models.DateTimeField(verbose_name='date')),
@@ -72,13 +86,30 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Login',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
+                    ),
+                ),
                 ('have_to_send_code', models.BooleanField(default=True, verbose_name='Have to send code')),
-                ('bot_token', models.CharField(blank=True, max_length=255, null=True, verbose_name='Bot token')),
-                ('phone_number', models.CharField(blank=True, max_length=20, null=True, verbose_name='Phone number')),
+                (
+                    'bot_token',
+                    models.CharField(blank=True, max_length=255, null=True, verbose_name='Bot token'),
+                ),
+                (
+                    'phone_number',
+                    models.CharField(blank=True, max_length=20, null=True, verbose_name='Phone number'),
+                ),
                 ('code', models.CharField(blank=True, max_length=10, null=True, verbose_name='Code')),
-                ('passcode', models.CharField(blank=True, max_length=100, null=True, verbose_name='Passcode')),
-                ('hash_code', models.CharField(blank=True, max_length=100, null=True, verbose_name='Hash code')),
+                (
+                    'passcode',
+                    models.CharField(blank=True, max_length=100, null=True, verbose_name='Passcode'),
+                ),
+                (
+                    'hash_code',
+                    models.CharField(blank=True, max_length=100, null=True, verbose_name='Hash code'),
+                ),
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Created at')),
                 (
                     'client_session',
@@ -97,10 +128,18 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Entity',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
+                    ),
+                ),
                 ('entity_id', models.BigIntegerField(verbose_name='Entity ID')),
                 ('hash_value', models.BigIntegerField(verbose_name='Hash Value')),
-                ('username', models.CharField(blank=True, max_length=255, null=True, verbose_name='Username')),
+                (
+                    'username',
+                    models.CharField(blank=True, max_length=255, null=True, verbose_name='Username'),
+                ),
                 ('phone', models.CharField(blank=True, max_length=15, null=True, verbose_name='Phone')),
                 ('name', models.CharField(blank=True, max_length=150, null=True, verbose_name='Name')),
                 ('date', models.DateTimeField(auto_now_add=True, verbose_name='Date')),
@@ -147,10 +186,18 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='SentFile',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
+                    ),
+                ),
                 ('md5_digest', models.BinaryField(verbose_name='MD5 digest')),
                 ('file_size', models.IntegerField(verbose_name='File size')),
-                ('file_type', models.IntegerField(choices=[(0, 'Document'), (1, 'Photo')], verbose_name='Type')),
+                (
+                    'file_type',
+                    models.IntegerField(choices=[(0, 'Document'), (1, 'Photo')], verbose_name='Type'),
+                ),
                 ('hash_value', models.BigIntegerField(verbose_name='Hash value')),
                 ('file_id', models.IntegerField(verbose_name='File ID')),
                 (

@@ -3,6 +3,7 @@ from django.urls import path
 from .apps import DjangoTelethonConfig
 from .views import login_bot_view, login_user_view, send_code_request_view
 
+
 app_name = DjangoTelethonConfig.name
 
 _urlpatterns = [

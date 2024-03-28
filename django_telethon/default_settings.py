@@ -31,5 +31,3 @@ if RABBITMQ_ACTIVE:
 
     if missing_settings:
         raise ValueError(f"'Telethon' {', '.join(missing_settings)} must be set if RABBITMQ_ACTIVE is True.")
-
-

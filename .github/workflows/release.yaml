@@ -61,7 +61,7 @@ jobs:
         run: |
           VERSION=${{ needs.versioning_pipeline.outputs.version }}
           echo "Version: $VERSION"
-          sed -i "s/__version__ = \"1.0.0\"/__version__ = \"$VERSION\"/g" setup.py
+          sed -i "s/version='1.0.0',/version='$VERSION',/g" setup.py
       - name: Install build
         run: python -m pip install build
       - name: Build dist

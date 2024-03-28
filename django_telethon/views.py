@@ -8,7 +8,7 @@ from django_telethon.models import App, ClientSession, Login, LoginStatus
 
 
 def _get_data(request):
-    if 'application/json' in request.META.get('CONTENT_TYPE', ''):
+    if 'application/json' in request.headers.get('content-type', ''):
         data = request.body.decode('utf-8')
         data = json.loads(data)
     else:
@@ -34,7 +34,9 @@ def send_code_request_view(request):
     if Login.objects.filter(client_session=client_session).have_to_send_code().exists():
         return JsonResponse({'error': 'Client session is already waiting for send code.'}, status=400)
 
-    login = Login.objects.create(client_session=client_session, phone_number=phone_number, have_to_send_code=True)
+    login = Login.objects.create(
+        client_session=client_session, phone_number=phone_number, have_to_send_code=True
+    )
     return JsonResponse({'login_id': login.id}, status=200)
 
 

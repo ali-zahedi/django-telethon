@@ -8,7 +8,7 @@
 
   ⭐️ Thanks **everyone** who has starred the project, it means a lot!
 
-This project is to help you use [Telethon](https://docs.telethon.dev/en/stable/index.html). 
+This project is to help you use [Telethon](https://docs.telethon.dev/en/stable/index.html).
 
 Django-Telethon is an asyncio Python 3 MTProto library to interact with Telegram's API as a user or through a bot account (bot API alternative).
 
@@ -31,7 +31,7 @@ Django-Telethon is a session storage implementation backend for Django ORM to us
 pip install django-telethon
 ```
 
-**OR** 
+**OR**
 
 * You can use the following command to set it up locally so that you can fix bugs or whatever and send pull requests:
 
@@ -49,7 +49,7 @@ For better understanding, please read the:
 
 ### settings.py
 
- 
+
  ``` python
 INSTALLED_APPS = [
     # ....
@@ -115,11 +115,11 @@ Read more (proxy, bot and etc) [Here](https://docs.telethon.dev/en/stable/basic/
     from django_telethon.sessions import DjangoSession
     from django_telethon.models import App, ClientSession
     from telethon.errors import SessionPasswordNeededError
-    
+
     # Use your own values from my.telegram.org
     API_ID = 12345
     API_HASH = '0123456789abcdef0123456789abcdef'
-    
+
     app, is_created = App.objects.update_or_create(
         api_id=API_ID,
         api_hash=API_HASH
@@ -129,7 +129,7 @@ Read more (proxy, bot and etc) [Here](https://docs.telethon.dev/en/stable/basic/
     )
     telegram_client = TelegramClient(DjangoSession(client_session=cs), app.api_id, app.api_hash)
     telegram_client.connect()
-    
+
     if not telegram_client.is_user_authorized():
         phone = input('Enter your phone number: ')
         telegram_client.send_code_request(phone)
@@ -138,7 +138,7 @@ Read more (proxy, bot and etc) [Here](https://docs.telethon.dev/en/stable/basic/
             telegram_client.sign_in(phone, code)
         except SessionPasswordNeededError:
             password = input('Enter your password: ')
-            telegram_client.sign_in(password=password)    
+            telegram_client.sign_in(password=password)
     ```
 
 #### Doing stuffs
@@ -171,17 +171,17 @@ async def handler(event):
     ```shell script
     python manage.py runtelegram
     ```
-   
+
 1. go to [admin panel](http://127.0.0.1:8000/admin/) and [telegram app section](http://127.0.0.1:8000/admin/django_telethon/app/). create a new app. get data from the [your Telegram account](https://my.telegram.org/auth).
 
 1. Request code from telegram:
-    
+
    ```python
    import requests
    import json
-   
+
    url = "http://127.0.0.1:8000/telegram/send-code-request/"
-   
+
    payload = json.dumps({
      "phone_number": "+12345678901",
      "client_session_name": "name of the client session"
@@ -189,20 +189,20 @@ async def handler(event):
    headers = {
      'Content-Type': 'application/json'
    }
-   
+
    response = requests.request("POST", url, headers=headers, data=payload)
-   
+
    print(response.text)
     ```
 
 1. Send this request for sign in:
-    
+
    ```python
    import requests
    import json
-   
+
    url = "http://127.0.0.1:8000/telegram/login-user-request/"
-   
+
    payload = json.dumps({
      "phone_number": "+12345678901",
      "client_session_name": "name of the client session",
@@ -212,22 +212,22 @@ async def handler(event):
    headers = {
      'Content-Type': 'application/json'
    }
-   
+
    response = requests.request("POST", url, headers=headers, data=payload)
-   
+
    print(response.text)
 
    ```
 
-#### Bot login 
+#### Bot login
 Send this request for sign in:
-    
+
    ```python
    import requests
    import json
-   
+
    url = "http://127.0.0.1:8000/telegram/login-bot-request/"
-   
+
    payload = json.dumps({
      "bot_token": "bot token",
      "client_session_name": "name of the client session",
@@ -235,9 +235,9 @@ Send this request for sign in:
    headers = {
      'Content-Type': 'application/json'
    }
-   
+
    response = requests.request("POST", url, headers=headers, data=payload)
-   
+
    print(response.text)
 
    ```
@@ -275,25 +275,25 @@ python manage.py runtelegram
 
 ## Listen to events
 
-After login telegram client the signal `telegram_client_registered` is emitted. 
+After login telegram client the signal `telegram_client_registered` is emitted.
 
 1. You can listen to this signal by using the following code for example put this code to your ```receivers.py``` file in app directory:
-   
+
    ```python
    from functools import partial
-   
+
    from django.dispatch import receiver
    from telethon import events
-   
+
    from django_telethon.signals import telegram_client_registered
-   
+
    async def event_handler(event, client_session):
        print(client_session.name, event.raw_text, sep=' | ')
        # if you need access to telegram client, you can use event.client
        # telegram_client = event.client
        await event.respond('!pong')
-   
-   
+
+
    @receiver(telegram_client_registered)
    def receiver_telegram_registered(telegram_client, client_session, *args, **kwargs):
        handler = partial(event_handler, client_session=client_session)
@@ -301,17 +301,17 @@ After login telegram client the signal `telegram_client_registered` is emitted.
            handler,
            events.NewMessage(incoming=True, pattern='ping'),
        )
-   
+
    ```
 
 1. In the `apps.py` file, add the following code:
-   
+
    ```python
    from django.apps import AppConfig
-   
+
    class MyAppConfig(AppConfig):
        ...
-   
+
        def ready(self):
            from .receivers import receiver_telegram_registered  # noqa: F401
    ```

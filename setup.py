@@ -2,6 +2,7 @@ import os
 
 from setuptools import find_packages, setup
 
+
 with open(os.path.join(os.path.dirname(__file__), 'README.md'), encoding="utf-8") as readme:
     README = readme.read()
 
@@ -42,12 +43,7 @@ setup(
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
-    install_requires=[
-        'Django>=3.0',
-        'Telethon>=1.24.0,<2',
-        'aio-pika>=9.3.0',
-        'pika>=1.3.2'
-    ],
+    install_requires=['Django>=3.0', 'Telethon>=1.24.0,<2', 'aio-pika>=9.3.0', 'pika>=1.3.2'],
     extras_require={
         'dev': [
             'flake8',
