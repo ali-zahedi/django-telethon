@@ -160,9 +160,9 @@ class DjangoSession(MemorySession):
                 if entity.entity_id == row[0]:
                     is_find = True
                     entity.hash_value = row[1]
-                    entity.username = row[2]
-                    entity.phone = row[3]
-                    entity.name = row[4]
+                    entity.username = row[2] if row[2] else entity.username
+                    entity.phone = row[3] if row[3] else entity.phone
+                    entity.name = row[4] if row[4] else entity.name
             if not is_find:
                 entities_does_not_exists.append(
                     Entity(

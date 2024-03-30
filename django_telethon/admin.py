@@ -50,7 +50,8 @@ class SessionAdmin(admin.ModelAdmin):
 @admin.register(Entity)
 class EntityAdmin(admin.ModelAdmin):
     list_display = [
-        'id',
+        'pk',
+        'entity_id',
         'client_session',
         'hash_value',
         'username',
@@ -62,6 +63,7 @@ class EntityAdmin(admin.ModelAdmin):
     list_filter = ['client_session__name']
     search_fields = (
         'hash_value',
+        'entity_id',
         'username',
         'phone',
         'name',
