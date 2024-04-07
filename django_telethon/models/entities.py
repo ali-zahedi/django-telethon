@@ -43,3 +43,6 @@ class Entity(models.Model):
     class Meta:
         verbose_name = _('Entity')
         verbose_name_plural = _('Entities')
+
+    def __str__(self):
+        return f'{self.entity_id} - {self.username} - {self.name}'
