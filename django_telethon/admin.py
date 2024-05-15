@@ -73,7 +73,7 @@ class EntityAdmin(admin.ModelAdmin):
 
     @admin.action(description="Send a test message")
     def send_a_test_message(self, request, queryset):
-        queryset = queryset.selected_related('client_session')
+        queryset = queryset.select_related('client_session')
         for entity in queryset:
             entity_id = entity.entity_id
             # TODO: try to handle this method inside the package
