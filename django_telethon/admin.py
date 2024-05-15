@@ -81,7 +81,7 @@ class EntityAdmin(admin.ModelAdmin):
                 'fn': 'send_message',
                 'msg': f'Check **{entity}**',
                 'parser': 'md',
-                'sender_name': entity.client_session.sender_name,
+                'sender_name': entity.client_session.name,
                 'receiver_id': entity_id,
                 'file_path': None,
             }
