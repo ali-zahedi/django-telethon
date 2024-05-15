@@ -6,35 +6,31 @@ import pika
 from django_telethon.default_settings import (
     QUEUE_CALLBACK_FN,
     QUEUE_CHANNEL_NAME,
-    RABBITMQ_URL,
+    RABBITMQ_URL, RABBITMQ_ACTIVE,
 )
 
+__all__ = [
+    "send_to_telegra_thread",
+]
 
-_rabbit_registered = False
-
-
-async def connect_rabbitmq():
-    global _rabbit_registered
-
-    if _rabbit_registered:
-        return
-
-    _rabbit_registered = True
-
-    connection = await aio_pika.connect_robust(RABBITMQ_URL)
-
-    # Creating a channel
-    channel = await connection.channel()
-
-    # Declare a queue to make sure it exists. If the queue is already there this won't do anything.
-    queue = await channel.declare_queue(QUEUE_CHANNEL_NAME, durable=True)
-
-    # Creating a consumer callback
-    async def on_message(message: aio_pika.IncomingMessage):
+async def process_message(message: aio_pika.IncomingMessage):
+    try:
         async with message.process():
             await QUEUE_CALLBACK_FN(message.body)
+    except Exception as e:
+        logging.exception(f"Failed to process message: {e}")
 
-    await queue.consume(on_message)
+
+async def consume_rabbitmq():
+    if not RABBITMQ_ACTIVE:
+        return
+
+    connection = await aio_pika.connect_robust(RABBITMQ_URL)
+    channel = await connection.channel()
+
+    queue = await channel.declare_queue(QUEUE_CHANNEL_NAME, durable=True)
+
+    await queue.consume(process_message)
 
 
 def send_to_telegra_thread(**payload):
