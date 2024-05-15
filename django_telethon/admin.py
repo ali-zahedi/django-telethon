@@ -1,5 +1,6 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 
+from . import send_to_telegra_thread
 from .models import App, ClientSession, Entity, Login, SentFile, Session, UpdateState
 
 
@@ -68,6 +69,24 @@ class EntityAdmin(admin.ModelAdmin):
         'phone',
         'name',
     )
+    actions = ('send_a_test_message',)
+
+    @admin.action(description="Send a test message")
+    def send_a_test_message(self, request, queryset):
+        queryset = queryset.selected_related('client_session')
+        for entity in queryset:
+            entity_id = entity.entity_id
+            # TODO: try to handle this method inside the package
+            payload = {
+                'fn': 'send_message',
+                'msg': f'Check **{entity}**',
+                'parser': 'md',
+                'sender_name': entity.client_session.sender_name,
+                'receiver_id': entity_id,
+                'file_path': None,
+            }
+            send_to_telegra_thread(**payload)
+        messages.success(request, f"Successfully sent message to {queryset.count()} entities.")
 
 
 @admin.register(UpdateState)
