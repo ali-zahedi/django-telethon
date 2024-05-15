@@ -6,12 +6,15 @@ import pika
 from django_telethon.default_settings import (
     QUEUE_CALLBACK_FN,
     QUEUE_CHANNEL_NAME,
-    RABBITMQ_URL, RABBITMQ_ACTIVE,
+    RABBITMQ_ACTIVE,
+    RABBITMQ_URL,
 )
+
 
 __all__ = [
     "send_to_telegra_thread",
 ]
+
 
 async def process_message(message: aio_pika.IncomingMessage):
     try:
@@ -39,10 +42,9 @@ def send_to_telegra_thread(**payload):
         connection = pika.BlockingConnection(parameters)
         channel = connection.channel()
 
-        # Ensure the queue exists. You might want to move this outside the function if you know the queue already exists.
         channel.queue_declare(queue=QUEUE_CHANNEL_NAME, durable=True)
         byte_payload = str(payload).encode('utf-8')
-        # Send the message
+
         channel.basic_publish(
             exchange='',
             routing_key=QUEUE_CHANNEL_NAME,
