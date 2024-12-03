@@ -16,13 +16,13 @@ async def _run_forever():
         logging.exception(e, exc_info=True)
 
     while True:
-        await asyncio.sleep(30)
         try:
             await re_connect_clients()
         except KeyboardInterrupt:
             break
         except Exception as e:
             logging.exception(e, exc_info=True)
+        await asyncio.sleep(30)
 
 
 async def _main():

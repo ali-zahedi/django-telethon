@@ -32,6 +32,7 @@ class LoginAdmin(admin.ModelAdmin):
         'created_at',
     ]
     list_filter = ['created_at', 'client_session__name']
+    raw_id_fields = ('client_session',)
 
 
 @admin.register(Session)
@@ -92,8 +93,9 @@ class EntityAdmin(admin.ModelAdmin):
 @admin.register(UpdateState)
 class UpdateStateAdmin(admin.ModelAdmin):
     list_display = [
-        'id',
+        'pk',
         'client_session',
+        'entity_id',
         'pts',
         'qts',
         'date',
@@ -101,6 +103,14 @@ class UpdateStateAdmin(admin.ModelAdmin):
     ]
     raw_id_fields = ['client_session']
     list_filter = ['client_session__name']
+
+    @admin.display(description="client session")
+    def client_session(self, obj):
+        return obj.client_session.name
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related('client_session')
 
 
 @admin.register(SentFile)

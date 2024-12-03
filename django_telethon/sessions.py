@@ -97,14 +97,14 @@ class DjangoSession(MemorySession):
 
     def get_update_state(self, entity_id):
         try:
-            state = self.client_session.updatestate_set.get(pk=entity_id)
+            state = self.client_session.updatestate_set.get(entity_id=entity_id)
             return types.updates.State(state.pts, state.qts, state.date, state.seq, unread_count=0)
         except UpdateState.DoesNotExist:
             return None
 
     def set_update_state(self, entity_id, state):
         self.client_session.updatestate_set.update_or_create(
-            pk=entity_id,
+            entity_id=entity_id,
             defaults={
                 'pts': state.pts,
                 'qts': state.qts,
