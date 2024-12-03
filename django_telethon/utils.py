@@ -51,7 +51,9 @@ async def connect_client(client_app, app):
     await telegram_client.connect()
     if not await telegram_client.is_user_authorized():
         client_app.login_status = LoginStatus.LOGIN_REQUIRED
-        client_app.save()
+        client_app.save(update_fields=['login_status'])
+        if client_app.session:
+            client_app.session.delete()
         logging.critical(f"Authorization failed for client: {client_app.name}")
         return
     if client_app.login_status != LoginStatus.LOGIN_DONE:
