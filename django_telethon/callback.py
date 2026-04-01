@@ -2,4 +2,4 @@ import logging
 
 
 async def on_message(byte_string: bytes):
-    logging.debug("Received message:", byte_string)
+    logging.debug("Received message: %r", byte_string)

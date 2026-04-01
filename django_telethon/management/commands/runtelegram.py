@@ -40,11 +40,16 @@ async def _main():
 
     task_telegram.cancel()
     task_rabbitmq.cancel()
-    try:
-        await task_telegram
-        await task_rabbitmq
-    except asyncio.CancelledError:
-        logging.info("Tasks was cancelled")
+    results = await asyncio.gather(
+        task_telegram,
+        task_rabbitmq,
+        return_exceptions=True,
+    )
+    for result in results:
+        if isinstance(result, Exception) and not isinstance(result, asyncio.CancelledError):
+            logging.exception("Task failed during shutdown: %s", result)
+
+    logging.info("Tasks were cancelled")
 
     logging.info("Shutting down gracefully")
 

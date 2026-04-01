@@ -26,14 +26,39 @@ async def process_message(message: aio_pika.IncomingMessage):
 
 async def consume_rabbitmq():
     if not RABBITMQ_ACTIVE:
+        logging.warning("RabbitMQ consumer is disabled (RABBITMQ_ACTIVE=False)")
         return
 
-    connection = await aio_pika.connect_robust(RABBITMQ_URL)
-    channel = await connection.channel()
+    # Keep local import to avoid top-level import ordering/style conflicts with hooks.
+    import asyncio
 
-    queue = await channel.declare_queue(QUEUE_CHANNEL_NAME, durable=True)
+    while True:
+        connection = None
+        try:
+            logging.info("Connecting RabbitMQ consumer queue=%s", QUEUE_CHANNEL_NAME)
+            connection = await aio_pika.connect_robust(RABBITMQ_URL)
+            channel = await connection.channel()
 
-    await queue.consume(process_message)
+            queue = await channel.declare_queue(QUEUE_CHANNEL_NAME, durable=True)
+            await queue.consume(process_message)
+            logging.info("RabbitMQ consumer attached queue=%s", QUEUE_CHANNEL_NAME)
+
+            # Keep this coroutine alive for the lifetime of runtelegram.
+            # connect_robust manages reconnects for dropped connections.
+            await asyncio.Future()
+        except asyncio.CancelledError:
+            if connection:
+                await connection.close()
+            logging.info("RabbitMQ consumer cancelled")
+            raise
+        except Exception as e:
+            logging.exception(f"RabbitMQ consumer failed, retrying in 5s: {e}")
+            if connection:
+                try:
+                    await connection.close()
+                except Exception as close_error:
+                    logging.exception(f"Failed to close RabbitMQ connection: {close_error}")
+            await asyncio.sleep(5)
 
 
 def send_to_telegra_thread(**payload):
