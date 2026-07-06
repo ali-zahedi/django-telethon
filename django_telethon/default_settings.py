@@ -15,6 +15,9 @@ QUEUE_CHANNEL_NAME = get_telethon_config('QUEUE_CHANNEL_NAME')
 QUEUE_CALLBACK = get_telethon_config('QUEUE_CALLBACK', default='django_telethon.callback.on_message')
 # Maximum seconds a single queue callback may run before its message is nacked.
 QUEUE_CALLBACK_TIMEOUT = get_telethon_config('QUEUE_CALLBACK_TIMEOUT', default=300)
+# Consecutive connect failures before a session is marked LOGIN_FAILED and
+# dropped from the retry loop (re-approve it in the admin to retry).
+CLIENT_CONNECT_FAILURE_LIMIT = get_telethon_config('CLIENT_CONNECT_FAILURE_LIMIT', default=10)
 QUEUE_CALLBACK_FN = None
 
 # Validate configuration
