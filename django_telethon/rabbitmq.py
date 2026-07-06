@@ -1,7 +1,9 @@
+import asyncio
 import logging
 
 import aio_pika
 import pika
+from aio_pika.exceptions import ChannelInvalidStateError
 
 from django_telethon.default_settings import (
     QUEUE_CALLBACK_FN,
@@ -20,6 +22,13 @@ async def process_message(message: aio_pika.IncomingMessage):
     try:
         async with message.process():
             await QUEUE_CALLBACK_FN(message.body)
+    except asyncio.CancelledError:
+        raise
+    except ChannelInvalidStateError:
+        # Raised from message.process().__aexit__ when the underlying channel
+        # closed mid-processing. connect_robust will re-establish; ack is lost
+        # and the broker will redeliver.
+        logging.warning("RabbitMQ channel invalid on ack; message will be redelivered")
     except Exception as e:
         logging.exception(f"Failed to process message: {e}")
 
@@ -36,8 +45,13 @@ async def consume_rabbitmq():
         connection = None
         try:
             logging.info("Connecting RabbitMQ consumer queue=%s", QUEUE_CHANNEL_NAME)
-            connection = await aio_pika.connect_robust(RABBITMQ_URL)
+            # heartbeat kept high so long Telethon calls don't trip the broker
+            # into closing the channel mid-processing (see redelivery loop notes).
+            connection = await aio_pika.connect_robust(RABBITMQ_URL, heartbeat=600)
             channel = await connection.channel()
+            # prefetch=1 caps the blast radius of a channel drop to a single
+            # un-acked message (and therefore at most one duplicate on reconnect).
+            await channel.set_qos(prefetch_count=1)
 
             queue = await channel.declare_queue(QUEUE_CHANNEL_NAME, durable=True)
             await queue.consume(process_message)
