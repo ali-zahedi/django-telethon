@@ -19,7 +19,11 @@ class LoginQueryset(models.QuerySet):
         return self.filter(have_to_send_code=True).distinct('client_session')
 
     def have_to_login(self):
-        return self.filter(Q(code__isnull=False) | Q(bot_token__isnull=False)).distinct('client_session')
+        # Blank CharFields are stored as '' (not NULL); an empty code/token
+        # must not trigger a sign-in attempt.
+        return self.filter(
+            (Q(code__isnull=False) & ~Q(code='')) | (Q(bot_token__isnull=False) & ~Q(bot_token=''))
+        ).distinct('client_session')
 
 
 class LoginManager(models.Manager):

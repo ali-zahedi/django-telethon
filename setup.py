@@ -25,8 +25,6 @@ setup(
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',
-        'Framework :: Django :: 3.0',
-        'Framework :: Django :: 3.1',
         'Framework :: Django :: 3.2',
         'Framework :: Django :: 4.0',
         'Intended Audience :: Developers',
@@ -43,7 +41,7 @@ setup(
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
-    install_requires=['Django>=3.0', 'Telethon>=1.24.0,<2', 'aio-pika>=9.3.0', 'pika>=1.3.2'],
+    install_requires=['Django>=3.2', 'Telethon>=1.24.0,<2', 'aio-pika>=9.3.0', 'pika>=1.3.2'],
     extras_require={
         'dev': [
             'flake8',

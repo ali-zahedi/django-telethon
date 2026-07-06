@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 
 import aio_pika
@@ -7,6 +8,7 @@ from aio_pika.exceptions import ChannelInvalidStateError
 
 from django_telethon.default_settings import (
     QUEUE_CALLBACK_FN,
+    QUEUE_CALLBACK_TIMEOUT,
     QUEUE_CHANNEL_NAME,
     RABBITMQ_ACTIVE,
     RABBITMQ_URL,
@@ -15,15 +17,30 @@ from django_telethon.default_settings import (
 
 __all__ = [
     "send_to_telegra_thread",
+    "send_to_telegram_thread",
 ]
 
 
 async def process_message(message: aio_pika.IncomingMessage):
     try:
-        async with message.process():
-            await QUEUE_CALLBACK_FN(message.body)
+        # First failure -> nack with requeue (one retry); failure of a
+        # redelivered message -> reject without requeue (dropped). Breaks
+        # poison-message loops while allowing one retry for transient errors.
+        async with message.process(requeue=True, reject_on_redelivered=True):
+            # Bound callback time: with prefetch=1 a hanging callback (dead
+            # client, long FloodWait) would otherwise block the queue forever.
+            # On timeout, wait_for cancels the callback and raises TimeoutError,
+            # which leaves the process() context so the message is nacked.
+            await asyncio.wait_for(QUEUE_CALLBACK_FN(message.body), timeout=QUEUE_CALLBACK_TIMEOUT)
     except asyncio.CancelledError:
+        # External cancellation (consumer shutdown) — wait_for re-raises it as
+        # CancelledError, only its *internal* cancel becomes TimeoutError.
         raise
+    except asyncio.TimeoutError:
+        logging.error(
+            "Queue callback exceeded %s seconds and was cancelled; message nacked",
+            QUEUE_CALLBACK_TIMEOUT,
+        )
     except ChannelInvalidStateError:
         # Raised from message.process().__aexit__ when the underlying channel
         # closed mid-processing. connect_robust will re-establish; ack is lost
@@ -82,7 +99,10 @@ def send_to_telegra_thread(**payload):
         channel = connection.channel()
 
         channel.queue_declare(queue=QUEUE_CHANNEL_NAME, durable=True)
-        byte_payload = str(payload).encode('utf-8')
+        # JSON wire format: fails fast at publish on non-serializable values
+        # instead of poisoning the queue with repr() strings the consumer
+        # cannot literal_eval (datetime, Decimal, lazy strings, ...).
+        byte_payload = json.dumps(payload).encode('utf-8')
 
         channel.basic_publish(
             exchange='',
@@ -97,3 +117,8 @@ def send_to_telegra_thread(**payload):
     except Exception as e:
         logging.error(f"django telethon error occurred: {e}")
         raise e
+
+
+# Correctly spelled public alias; the original name is kept for
+# backwards compatibility.
+send_to_telegram_thread = send_to_telegra_thread
