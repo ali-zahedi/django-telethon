@@ -5,14 +5,24 @@ from django.db import migrations, models
 
 def _migrate_from_old_column(apps, schema_editor) -> None:
     UpdateState = apps.get_model("django_telethon", "UpdateState")
-    i = 0
-    for update_state in UpdateState.objects.all():
-        i += 1
-        UpdateState.objects.filter(id=update_state.id).update(id=i, entity_id=update_state.id)
 
-    # Step 2: Reset primary keys
-    with schema_editor.connection.cursor() as cursor:
-        cursor.execute(f"ALTER SEQUENCE {UpdateState._meta.db_table}_id_seq RESTART WITH {i +  1}")
+    # Phase 1: park every row on a guaranteed-free id (negative ids cannot
+    # collide with positive autoincrement PKs) while preserving the old id in
+    # entity_id. Renumbering straight to 1..n can collide with existing PKs.
+    for old_id in list(UpdateState.objects.values_list('id', flat=True)):
+        UpdateState.objects.filter(id=old_id).update(id=-old_id, entity_id=old_id)
+
+    # Phase 2: renumber sequentially to 1..n (order matches the original ids).
+    i = 0
+    for parked_id in list(UpdateState.objects.filter(id__lt=0).order_by('-id').values_list('id', flat=True)):
+        i += 1
+        UpdateState.objects.filter(id=parked_id).update(id=i)
+
+    # Step 3: Reset the primary key sequence. Only PostgreSQL has this kind of
+    # sequence; the statement crashes SQLite/MySQL.
+    if schema_editor.connection.vendor == 'postgresql':
+        with schema_editor.connection.cursor() as cursor:
+            cursor.execute(f"ALTER SEQUENCE {UpdateState._meta.db_table}_id_seq RESTART WITH {i + 1}")
 
 
 class Migration(migrations.Migration):
