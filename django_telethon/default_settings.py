@@ -13,6 +13,8 @@ RABBITMQ_ACTIVE = get_telethon_config('RABBITMQ_ACTIVE', False)
 RABBITMQ_URL = get_telethon_config('RABBITMQ_URL')
 QUEUE_CHANNEL_NAME = get_telethon_config('QUEUE_CHANNEL_NAME')
 QUEUE_CALLBACK = get_telethon_config('QUEUE_CALLBACK', default='django_telethon.callback.on_message')
+# Maximum seconds a single queue callback may run before its message is nacked.
+QUEUE_CALLBACK_TIMEOUT = get_telethon_config('QUEUE_CALLBACK_TIMEOUT', default=300)
 QUEUE_CALLBACK_FN = None
 
 # Validate configuration
