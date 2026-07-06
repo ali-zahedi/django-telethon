@@ -71,6 +71,11 @@ def login_user_view(request):
         login.code = code
         login.passcode = password
         login.save()
+    else:
+        return JsonResponse(
+            {'error': 'No pending login found for this client session. Request a code first.'},
+            status=400,
+        )
     return JsonResponse({}, status=200)
 
 
