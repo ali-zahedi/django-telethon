@@ -37,7 +37,7 @@ class SentFile(models.Model):
     hash_value = models.BigIntegerField(
         verbose_name=_('Hash value'),
     )
-    file_id = models.IntegerField(
+    file_id = models.BigIntegerField(
         verbose_name=_('File ID'),
     )
 

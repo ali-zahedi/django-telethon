@@ -72,9 +72,9 @@ class DjangoSession(MemorySession):
 
     @MemorySession.takeout_id.setter
     def takeout_id(self, value):
-        self._takeout_id = value
         if value == self._takeout_id:
             return
+        self._takeout_id = value
         self._update_session_table()
 
     def _update_session_table(self):
@@ -224,7 +224,7 @@ class DjangoSession(MemorySession):
             row := self.client_session.sentfile_set.filter(
                 md5_digest=md5_digest, file_size=file_size, file_type=SentFileType.from_type(cls).value
             )
-            .values_list('pk', 'hash_value')
+            .values_list('file_id', 'hash_value')
             .first()
         ):
             # Both allowed classes have (id, access_hash) as parameters
